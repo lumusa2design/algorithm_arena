@@ -1,23 +1,30 @@
 import pygame
 
 WIDTH, HEIGHT = 800, 600
-BAR_COLOR = (200, 200, 200)
-COMPARE_COLOR = (255, 80, 80)
-SWAP_COLOR = (80, 255, 80)
 
-def draw_bars(screen, arr, highlight=None):
-    screen.fill((20, 20, 20))
-    bar_width = WIDTH // len(arr)
+def draw_panel(screen, x, title, font):
+    pygame.draw.rect(screen, (30, 30, 30), (x, 0, 400, HEIGHT))
+    pygame.draw.line(screen, (80, 80, 80), (x, 0), (x, HEIGHT), 2)
+    screen.blit(font.render(title, True, (255, 255, 255)), (x + 140, 10))
+
+
+def draw_bars(screen, arr, x_offset, width, highlight=None):
+    bar_width = width // len(arr)
     max_val = max(arr)
 
     for i, val in enumerate(arr):
-        color = BAR_COLOR
-        if highlight and i in highlight:
+        color = (180, 180, 180)
+        if highlight and i in highlight["indices"]:
             color = highlight["color"]
 
-        height = int((val / max_val) * (HEIGHT - 50))
+        height = int((val / max_val) * (HEIGHT - 160))
         pygame.draw.rect(
             screen,
             color,
-            (i * bar_width, HEIGHT - height, bar_width - 2, height)
+            (
+                x_offset + i * bar_width,
+                HEIGHT - height - 80,
+                bar_width - 2,
+                height
+            )
         )
