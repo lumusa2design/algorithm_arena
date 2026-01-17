@@ -1,7 +1,7 @@
 import pygame
 from ui import Button
 from modes.sorting_mode import run_sorting_mode
-
+from modes.graph_mode import run_graph_mode
 pygame.init()
 screen = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Algorithm Arena")
@@ -32,6 +32,8 @@ while running:
             if state == STATE_MAIN:
                 if btn_sorting.clicked(event.pos):
                     run_sorting_mode(screen)
+                if btn_graphs.clicked(event.pos):
+                    run_graph_mode(screen)
                 if btn_exit.clicked(event.pos):
                     running = False
 
