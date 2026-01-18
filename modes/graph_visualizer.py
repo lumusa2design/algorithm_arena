@@ -1,40 +1,22 @@
 import pygame
-import math
 from ui import Button
 
-def run_graph_visualization(screen, algorithm):
+def run_graph_visualization(screen, algorithm, graph, positions, start_node):
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("consolas", 20)
-
-    graph = {
-        0: [1, 2],
-        1: [3, 4],
-        2: [5],
-        3: [],
-        4: [],
-        5: []
-    }
-
-    positions = {
-        0: (400, 120),
-        1: (250, 220),
-        2: (550, 220),
-        3: (200, 340),
-        4: (300, 340),
-        5: (550, 340)
-    }
+    small = pygame.font.SysFont("consolas", 16)
 
     visited = set()
     active_edge = None
 
-    gen = algorithm(graph, 0)
+    gen = algorithm(graph, start_node)
 
     btn_next = Button((440, 540, 160, 40), "Paso ->")
     btn_back = Button((20, 20, 120, 40), "Volver")
 
     explanation = "Pulsa Paso -> para comenzar"
-    running = True
 
+    running = True
     while running:
         clock.tick(60)
         mouse = pygame.mouse.get_pos()
@@ -55,8 +37,8 @@ def run_graph_visualization(screen, algorithm):
 
                         if action[0] == "visit":
                             visited.add(action[1])
-                            explanation = f"Visitando nodo {action[1]}"
                             active_edge = None
+                            explanation = f"Visitando nodo {action[1]}"
 
                         else:
                             active_edge = (action[1], action[2])
@@ -85,7 +67,11 @@ def run_graph_visualization(screen, algorithm):
             )
 
         for node, (x, y) in positions.items():
-            color = (90, 255, 140) if node in visited else (180, 180, 180)
+            if node in visited:
+                color = (90, 255, 140)
+            else:
+                color = (180, 180, 180)
+
             pygame.draw.circle(screen, color, (x, y), 22)
             pygame.draw.circle(screen, (40, 40, 40), (x, y), 22, 2)
             label = font.render(str(node), True, (0, 0, 0))
@@ -93,7 +79,8 @@ def run_graph_visualization(screen, algorithm):
 
         pygame.draw.rect(screen, (25, 25, 25), (0, 480, 800, 120))
         pygame.draw.line(screen, (80, 80, 80), (0, 480), (800, 480), 2)
-        screen.blit(font.render(explanation, True, (220, 220, 220)), (20, 500))
+
+        screen.blit(small.render(explanation, True, (220, 220, 220)), (20, 500))
 
         btn_next.draw(screen, font, mouse)
         btn_back.draw(screen, font, mouse)

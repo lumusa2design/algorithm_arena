@@ -15,7 +15,7 @@ STATE_SORTING = "SORTING"
 state = STATE_MAIN
 
 btn_sorting = Button((300, 220, 200, 50), "Ordenación")
-btn_graphs = Button((300, 300, 200, 50), "Recorrido de grafos")
+btn_graphs = Button((300, 300, 200, 50), "Recorrido de Grafos")
 btn_exit = Button((300, 380, 200, 50), "Salir")
 
 running = True
