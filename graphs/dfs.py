@@ -1,14 +1,39 @@
 def dfs(graph, start):
     visited = set()
+    seen = {start}
     stack = [start]
 
     while stack:
-        node = stack.pop()
-        if node not in visited:
-            visited.add(node)
-            yield ("visit", node)
+        yield {
+            "algo": "DFS",
+            "action": "stack",
+            "stack": list(stack),
+            "visited": set(visited),
+            "seen": set(seen)
+        }
 
-            for neighbor in reversed(graph[node]):
-                if neighbor not in visited:
-                    stack.append(neighbor)
-                    yield ("push", node, neighbor)
+        u = stack.pop()
+        visited.add(u)
+
+        yield {
+            "algo": "DFS",
+            "action": "visit",
+            "node": u,
+            "stack": list(stack),
+            "visited": set(visited),
+            "seen": set(seen)
+        }
+
+        for v, _ in reversed(graph[u]):
+            if v not in seen:
+                seen.add(v)
+                stack.append(v)
+
+                yield {
+                    "algo": "DFS",
+                    "action": "edge",
+                    "edge": (u, v),
+                    "stack": list(stack),
+                    "visited": set(visited),
+                    "seen": set(seen)
+                }
