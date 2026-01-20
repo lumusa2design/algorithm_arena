@@ -5,8 +5,9 @@ GRAY = (180, 180, 180)
 YELLOW = (255, 220, 120)
 GREEN = (90, 255, 140)
 BLUE = (120, 160, 255)
+RED = (255, 80, 80)
 
-def run_graph_visualization(screen, algorithm, graph, positions, start):
+def run_graph_visualization(screen, algorithm, graph, positions, start, target):
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("consolas", 18)
     small = pygame.font.SysFont("consolas", 14)
@@ -19,8 +20,10 @@ def run_graph_visualization(screen, algorithm, graph, positions, start):
     seen_order = []
 
     dist = {}
+    prev = {}
     container = []
     active_edge = None
+    shortest_path = []
     algo = ""
 
     explanation = "Pulsa Paso -> para avanzar"
@@ -63,15 +66,14 @@ def run_graph_visualization(screen, algorithm, graph, positions, start):
                         visited = data.get("visited", visited)
                         seen = data.get("seen", seen)
                         dist = data.get("dist", dist)
+                        prev = data.get("prev", prev)
 
                         if "queue" in data:
                             container = data["queue"]
                             explanation = "Cola (BFS)"
-
                         elif "stack" in data:
                             container = data["stack"]
                             explanation = "Pila (DFS)"
-
                         elif "pq" in data:
                             container = data["pq"]
                             explanation = "Cola de prioridad (Dijkstra)"
@@ -98,7 +100,20 @@ def run_graph_visualization(screen, algorithm, graph, positions, start):
                             active_edge = (u, v)
 
                     except StopIteration:
-                        explanation = f"{algo} terminado"
+                        if algo == "Dijkstra" and prev and target is not None:
+                            shortest_path = []
+                            cur = target
+                            while cur is not None:
+                                shortest_path.append(cur)
+                                cur = prev.get(cur)
+                            shortest_path.reverse()
+                            explanation = (
+                                f"Dijkstra terminado. "
+                                f"Camino mínimo {start} → {target}: "
+                                f"{' → '.join(map(str, shortest_path))}"
+                            )
+                        else:
+                            explanation = f"{algo} terminado"
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button in (2, 3):
@@ -112,10 +127,7 @@ def run_graph_visualization(screen, algorithm, graph, positions, start):
                 last_mouse = event.pos
 
             if event.type == pygame.MOUSEWHEEL:
-                if event.y > 0:
-                    zoom = min(2.5, zoom + 0.1)
-                else:
-                    zoom = max(0.3, zoom - 0.1)
+                zoom = min(2.5, max(0.3, zoom + event.y * 0.1))
 
         for u, edges in graph.items():
             for v, w in edges:
@@ -126,13 +138,23 @@ def run_graph_visualization(screen, algorithm, graph, positions, start):
                     transform(positions[v]),
                     2
                 )
-
                 mx = (positions[u][0] + positions[v][0]) // 2
                 my = (positions[u][1] + positions[v][1]) // 2
                 screen.blit(
                     small.render(str(w), True, (220, 220, 220)),
                     transform((mx, my))
                 )
+
+        for i in range(len(shortest_path) - 1):
+            u = shortest_path[i]
+            v = shortest_path[i + 1]
+            pygame.draw.line(
+                screen,
+                RED,
+                transform(positions[u]),
+                transform(positions[v]),
+                5
+            )
 
         if active_edge:
             pygame.draw.line(

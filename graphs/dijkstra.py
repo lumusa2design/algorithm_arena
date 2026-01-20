@@ -2,8 +2,9 @@ import heapq
 
 def dijkstra(graph, start):
     dist = {n: float("inf") for n in graph}
-    dist[start] = 0
+    prev = {n: None for n in graph}
 
+    dist[start] = 0
     visited = set()
     seen = {start}
     pq = [(0, start)]
@@ -14,6 +15,7 @@ def dijkstra(graph, start):
             "action": "pq",
             "pq": list(pq),
             "dist": dict(dist),
+            "prev": dict(prev),
             "visited": set(visited),
             "seen": set(seen)
         }
@@ -30,6 +32,7 @@ def dijkstra(graph, start):
             "node": u,
             "pq": list(pq),
             "dist": dict(dist),
+            "prev": dict(prev),
             "visited": set(visited),
             "seen": set(seen)
         }
@@ -41,6 +44,7 @@ def dijkstra(graph, start):
             nd = d + w
             if nd < dist[v]:
                 dist[v] = nd
+                prev[v] = u
                 heapq.heappush(pq, (nd, v))
                 seen.add(v)
 
@@ -50,6 +54,7 @@ def dijkstra(graph, start):
                     "edge": (u, v, w),
                     "pq": list(pq),
                     "dist": dict(dist),
+                    "prev": dict(prev),
                     "visited": set(visited),
                     "seen": set(seen)
                 }
