@@ -1,6 +1,9 @@
 import pygame
 import math
 import json
+import tkinter as tk
+from tkinter import filedialog
+
 from ui import Button
 from graphs.bfs import bfs
 from graphs.dfs import dfs
@@ -8,7 +11,6 @@ from graphs.dijkstra import dijkstra
 from modes.graph_visualizer import run_graph_visualization
 
 NODE_RADIUS = 20
-SAVE_FILE = "graph.json"
 UI_X = 600
 
 def dist(a, b):
@@ -18,6 +20,11 @@ def run_graph_editor(screen):
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("consolas", 18)
     small = pygame.font.SysFont("consolas", 14)
+
+    tk_root = tk.Tk()
+    tk_root.withdraw()
+    tk_root.attributes("-topmost", True)
+    tk_root.attributes("-topmost", False)
 
     graph = {}
     positions = {}
@@ -48,7 +55,7 @@ def run_graph_editor(screen):
 
     btn_algo = Button((620, 20, 160, 40), algorithms[algo_index][0])
     btn_run = Button((620, 70, 160, 40), "Ejecutar")
-    btn_save = Button((620, 120, 160, 40), "Guardar")
+    btn_save = Button((620, 120, 160, 40), "Guardar como")
     btn_load = Button((620, 170, 160, 40), "Cargar")
     btn_back = Button((620, 220, 160, 40), "Volver")
 
@@ -60,6 +67,9 @@ def run_graph_editor(screen):
         "S: inicio | D: destino | Supr: borrar"
     )
 
+    def node_screen_radius():
+        return max(6, int(NODE_RADIUS * zoom))
+
     def world_from_screen(p):
         return ((p[0] - offset[0]) / zoom, (p[1] - offset[1]) / zoom)
 
@@ -67,7 +77,7 @@ def run_graph_editor(screen):
         return (int(p[0] * zoom + offset[0]), int(p[1] * zoom + offset[1]))
 
     def pick_node(screen_pos):
-        r = NODE_RADIUS * zoom
+        r = node_screen_radius()
         for n, pos_w in positions.items():
             pos_s = screen_from_world(pos_w)
             if dist(pos_s, screen_pos) <= r:
@@ -75,19 +85,27 @@ def run_graph_editor(screen):
         return None
 
     def delete_node(n):
-        nonlocal start_node, target_node, selected
+        nonlocal selected, start_node, target_node
         graph.pop(n, None)
         positions.pop(n, None)
-        for u in list(graph.keys()):
+        for u in graph:
             graph[u] = [(v, w) for (v, w) in graph[u] if v != n]
+        if selected == n:
+            selected = None
         if start_node == n:
             start_node = None
         if target_node == n:
             target_node = None
-        if selected == n:
-            selected = None
 
-    def save_graph():
+    def save_graph_as():
+        path = filedialog.asksaveasfilename(
+            title="Guardar grafo como",
+            defaultextension=".json",
+            filetypes=[("Graph files", "*.json")]
+        )
+        if not path:
+            return
+
         data = {
             "graph": {str(k): v for k, v in graph.items()},
             "positions": {str(k): [float(p[0]), float(p[1])] for k, p in positions.items()},
@@ -95,19 +113,33 @@ def run_graph_editor(screen):
             "target": target_node,
             "next_id": next_id
         }
-        with open(SAVE_FILE, "w", encoding="utf-8") as f:
+
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
-    def load_graph():
+        pygame.event.clear()
+
+    def load_graph_from():
         nonlocal graph, positions, start_node, target_node, next_id, selected
-        with open(SAVE_FILE, "r", encoding="utf-8") as f:
+
+        path = filedialog.askopenfilename(
+            title="Cargar grafo",
+            filetypes=[("Graph files", "*.json")]
+        )
+        if not path:
+            return
+
+        with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
+
         graph = {int(k): v for k, v in data.get("graph", {}).items()}
         positions = {int(k): (float(v[0]), float(v[1])) for k, v in data.get("positions", {}).items()}
-        start_node = data.get("start", None)
-        target_node = data.get("target", None)
+        start_node = data.get("start")
+        target_node = data.get("target")
         next_id = int(data.get("next_id", 0))
         selected = None
+
+        pygame.event.clear()
 
     running = True
     while running:
@@ -146,10 +178,10 @@ def run_graph_editor(screen):
                     )
 
                 if btn_save.clicked(event.pos):
-                    save_graph()
+                    save_graph_as()
 
                 if btn_load.clicked(event.pos):
-                    load_graph()
+                    load_graph_from()
 
                 if event.pos[0] >= UI_X:
                     continue
@@ -217,11 +249,7 @@ def run_graph_editor(screen):
                         delete_node(selected)
 
         for u, edges in graph.items():
-            if u not in positions:
-                continue
             for v, w in edges:
-                if v not in positions:
-                    continue
                 pygame.draw.line(
                     screen,
                     (100, 100, 100),
@@ -236,6 +264,7 @@ def run_graph_editor(screen):
                     screen_from_world((mx, my))
                 )
 
+        r = node_screen_radius()
         for n, pos in positions.items():
             if n == start_node:
                 color = (255, 200, 100)
@@ -247,7 +276,6 @@ def run_graph_editor(screen):
                 color = (180, 180, 180)
 
             x, y = screen_from_world(pos)
-            r = max(6, int(NODE_RADIUS * zoom))
             pygame.draw.circle(screen, color, (x, y), r)
             pygame.draw.circle(screen, (40, 40, 40), (x, y), r, 2)
             lbl = font.render(str(n), True, (0, 0, 0))
@@ -258,7 +286,7 @@ def run_graph_editor(screen):
 
         y = 260
         for line in explanation.split("\n"):
-            screen.blit(font.render(line, True, (220, 220, 220)), (610, y))
+            screen.blit(font.render(line, True, (220, 220, 220)), (620, y))
             y += 22
 
         if input_weight:
