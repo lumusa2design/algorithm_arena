@@ -15,4 +15,5 @@ A comprehensive repository for learning and visualizing sorting algorithms and d
 2. Install dependencies
 3. Run the visualization tool
 4. Select an algorithm and watch it in action
-HM AREAN
+
+
