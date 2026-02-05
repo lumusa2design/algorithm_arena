@@ -3,12 +3,14 @@ import random
 
 from sorting.bubble_sort import bubble_sort
 from sorting.comb_sort import comb_sort
+from sorting.quick_sort import quick_sort
 from visualizer import draw_bars, draw_panel
 from ui import Button
 
 ALGO_MAP = {
     "Bubble Sort": bubble_sort,
-    "Comb Sort": comb_sort
+    "Comb Sort": comb_sort,
+    "Quick Sort": quick_sort
 }
 
 def run_sorting_visualization(screen, mode, left_algo, right_algo=None):

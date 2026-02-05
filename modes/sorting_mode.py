@@ -8,7 +8,7 @@ def run_sorting_mode(screen):
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("consolas", 20)
 
-    ALGORITHMS = ["Bubble Sort", "Comb Sort"]
+    ALGORITHMS = ["Bubble Sort", "Comb Sort", "Quick Sort"]
     selected_left = 0
     selected_right = 1
     mode = "SINGLE"
